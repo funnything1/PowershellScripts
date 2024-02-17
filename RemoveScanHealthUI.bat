@@ -1,14 +1,4 @@
 @echo off
-
-:: Ensure admin privileges
-fltmc >nul 2>&1 || (
-    echo Administrator privileges are required.
-    PowerShell Start -Verb RunAs '%0' 2> nul || (
-        echo Right-click on the script and select "Run as administrator".
-        pause & exit 1
-    )
-    exit 0
-)
 :: Initialize environment
 setlocal EnableExtensions DisableDelayedExpansion
 
@@ -43,9 +33,6 @@ reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\De
 PowerShell -ExecutionPolicy Unrestricted -Command "$keyName='HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\EndOfLife\$CURRENT_USER_SID\Microsoft.SecHealthUI_8wekyb3d8bbwe'; $replaceSid=$true <# $false #>; $registryHive = $keyName.Split('\')[0]; $registryPath = "^""$($registryHive):$($keyName.Substring($registryHive.Length))"^""; $userSid = (New-Object System.Security.Principal.NTAccount($env:USERNAME)).Translate([Security.Principal.SecurityIdentifier]).Value; $registryPath = $registryPath.Replace('$CURRENT_USER_SID', $userSid); if (-not (Test-Path $registryPath)) {; Write-Host "^""Skipping, no action needed, registry path `"^""$registryPath`"^"" does not exist."^""; exit 0; }; try {; Remove-Item -Path $registryPath -Force -ErrorAction Stop | Out-Null; Write-Host "^""Successfully removed the registry key at path `"^""$registryPath`"^""."^""; } catch {; Write-Error "^""Failed to remove the registry key at path `"^""$registryPath`"^"": $($_.Exception.Message)"^""; }"
 :: ----------------------------------------------------------
 
-
-:: Pause the script to view the final state
-pause
 :: Restore previous environment settings
 endlocal
 :: Exit the script successfully
